@@ -21,6 +21,9 @@ public class Reward {
         this.price = price;
     }
 
+    public Reward() {
+
+    };
     public String getName() {
         return name;
     }

@@ -11,18 +11,25 @@ public class Container {
 
     private String name;
 
+    private String url;
+
+
+
     private String containerType;
 
     private double price;
 
     private @OneToMany Reward[] rewards;
 
-    public Container(String name, String containerType, double price, Reward[] rewards) {
+    public Container(String name, String url, String containerType, double price, Reward[] rewards) {
         this.name = name;
+        this.url = url;
         this.containerType = containerType;
         this.price = price;
         this.rewards = rewards;
     }
+
+    public Container(){};
 
     public String getName() {
         return name;
@@ -30,6 +37,14 @@ public class Container {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
     }
 
     public String getType() {
