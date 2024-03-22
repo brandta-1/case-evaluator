@@ -42,6 +42,7 @@ public class DatabaseLoader implements CommandLineRunner {
     @Override
     public void run(String... strings) throws Exception {
 
+        //...
         boolean dontRunThis = false;
         if(dontRunThis){
             return;
@@ -50,7 +51,7 @@ public class DatabaseLoader implements CommandLineRunner {
 
 
         //init wears
-        HashMap<String, double[]> wears = new HashMap<String, double[]>();
+        HashMap<String, double[]> wears = new HashMap<>();
 
         wears.put("Factory New", new double[]{0,0.7});
         wears.put("Minimal Wear", new double[]{0.7,0.15});
@@ -66,15 +67,17 @@ public class DatabaseLoader implements CommandLineRunner {
 
         // String nameParam = URLEncoder.encode(name, StandardCharsets.UTF_8);
 
+        RetrieveWebData retrieveWebData = new RetrieveWebData();
         for(Object crateObj: crates){
             JSONObject crate = (JSONObject) crateObj;
 
             Container newContainer = new Container();
 
-            newContainer.setName((String) crate.get("name"));
+            String containerName = (String) crate.get("name");
+            newContainer.setName(containerName);
             newContainer.setUrl((String) crate.get("url"));
             newContainer.setType((String) crate.get("type"));
-
+            newContainer.setPrice( retrieveWebData.getContainerPrice(containerName));
             JSONArray crateContains = (JSONArray) crate.get("contains");
 
             for(Object rewardObj: crateContains) {
