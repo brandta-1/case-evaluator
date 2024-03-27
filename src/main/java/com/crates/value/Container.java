@@ -2,6 +2,7 @@ package com.crates.value;
 
 import jakarta.persistence.*;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 
 @Entity
@@ -17,11 +18,11 @@ public class Container {
 
     private String containerType;
 
-    private double price;
+    private BigDecimal price;
 
     private @OneToMany Reward[] rewards;
 
-    public Container(String name, String url, String containerType, double price, Reward[] rewards) {
+    public Container(String name, String url, String containerType, BigDecimal price, Reward[] rewards) {
         this.name = name;
         this.url = url;
         this.containerType = containerType;
@@ -55,11 +56,11 @@ public class Container {
         this.containerType = containerType;
     }
 
-    public double getPrice(){
+    public BigDecimal getPrice(){
         return price;
     }
 
-    public void setPrice(double price){
+    public void setPrice(BigDecimal price){
         this.price = price;
     }
 

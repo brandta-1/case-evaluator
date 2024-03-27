@@ -1,29 +1,21 @@
 package com.crates.value;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.boot.CommandLineRunner;
 
+import org.json.simple.JSONObject;
 import org.json.simple.JSONArray;
 import org.json.simple.parser.*;
 
-import java.io.BufferedReader;
+import java.util.HashMap;
+import java.util.Map;
+import static java.util.Map.entry;
+
 import java.io.FileReader;
 
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URI;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
+import java.math.BigDecimal;
 
 @Component
 public class DatabaseLoader implements CommandLineRunner {
@@ -31,11 +23,10 @@ public class DatabaseLoader implements CommandLineRunner {
     @Value("${example.host}")
     private String localhost;
     private final ContainerRepository containers;
-    private final RewardRepository rewards;
 
     @Autowired
-    public DatabaseLoader(RewardRepository rewardRepository, ContainerRepository containerRepository) {
-        this.rewards = rewardRepository;
+    public DatabaseLoader(ContainerRepository containerRepository) {
+
         this.containers = containerRepository;
     }
 
@@ -48,109 +39,89 @@ public class DatabaseLoader implements CommandLineRunner {
             return;
         }
 
-
-
-        //init wears
-        HashMap<String, double[]> wears = new HashMap<>();
-
-        wears.put("Factory New", new double[]{0,0.7});
-        wears.put("Minimal Wear", new double[]{0.7,0.15});
-        wears.put("Field-Tested", new double[]{0.15,0.37});
-        wears.put("Well-Worn", new double[]{0.37,0.44});
-        wears.put("Battle-Scarred", new double[]{0.44,1});
-
-
-
         //TODO ask
         JSONArray crates = (JSONArray) new JSONParser().parse(
                 new FileReader("src/main/resources/cases.json"));
 
-        // String nameParam = URLEncoder.encode(name, StandardCharsets.UTF_8);
-
+        PartitionWear partitionWear = new PartitionWear();
+        RarityDenominators rarityDenominators = new RarityDenominators();
         RetrieveWebData retrieveWebData = new RetrieveWebData();
+
+        Map<String, Double> rarityOdds = new HashMap<>(Map.ofEntries(
+                entry("l", 0.032),
+                entry("m",  0.1598),
+                entry("r",  0.7992),
+                entry("a",0.0064)
+        ));
+
+        //these are the float value definitions for weapon conditions, starting from factory new.
+        //there is actually a 0.01 gap between the wears
+        double[][] weaponWearBoundaries = {
+                {0.0,0.07},
+                {0.08,0.15},
+                {0.16,0.37},
+                {0.38,0.44},
+                {0.45,1.0}
+        };
+
         for(Object crateObj: crates){
+
+            //TODO potentially fix this typecasting
             JSONObject crate = (JSONObject) crateObj;
-
             Container newContainer = new Container();
-
-            String containerName = (String) crate.get("name");
-            newContainer.setName(containerName);
+            //set new container in the db
+            //TODO typecasting fix...
+            newContainer.setName((String) crate.get("name"));
             newContainer.setUrl((String) crate.get("url"));
             newContainer.setType((String) crate.get("type"));
-            newContainer.setPrice( retrieveWebData.getContainerPrice(containerName));
+
+            BigDecimal containerPrice = retrieveWebData.getContainerPrice(newContainer.getUrl());
+            newContainer.setPrice(containerPrice);
+
             JSONArray crateContains = (JSONArray) crate.get("contains");
 
+            Map<String, Integer> denominators = rarityDenominators.getRarityDenominators(crateContains);
+
+            Reward[] crateRewards = new Reward[crateContains.size()];
+
+            int index = 0;
             for(Object rewardObj: crateContains) {
-                JSONObject reward = (JSONObject) rewardObj;
+                JSONObject rewardJSON = (JSONObject) rewardObj;
 
-                Reward newReward = new Reward();
+                Reward reward = new Reward();
 
-                newReward.setName((String) reward.get("name"));
-                System.out.println(newReward.getName());
+                //TODO same here, see above
+                reward.setName((String) rewardJSON.get("name"));
+                reward.setUrl((String) rewardJSON.get("url"));
+
+                JSONObject rewardRarity = (JSONObject) rewardJSON.get("rarity");
+                //todo this probably needs to be changed
+                reward.setRarity(String.valueOf(rewardRarity.get("id").toString().charAt(7)));
+
+                //the odds of an item are its rarity divided by how many of its rarity are in its container
+                reward.setOdds(rarityOdds.get(reward.getRarity()) / denominators.get(reward.getRarity()));
+
+                //the prices of an item are an array of its possible qualities, retrieved from the web
+                String[] rewardPrices = retrieveWebData.getRewardPrice(reward.getUrl());
+                reward.setPrices(rewardPrices);
+
+                JSONArray floatCapsJSON = (JSONArray) rewardJSON.get("floatCaps");
+
+                //better way to parse json than this? floatCaps in the original JSON is just something like: [0,0.8]
+                double[] floatCaps = {Double.parseDouble(floatCapsJSON.getFirst().toString()),
+                        Double.parseDouble(floatCapsJSON.getLast().toString())};
+
+                int floatGaps = partitionWear.getFloatGaps(floatCaps);
+
+                double[] wears = WearOdds.getWearOdds(weaponWearBoundaries, floatCaps, floatGaps);
+
+                reward.setWearOdds(wears);
+
+                //todo need to calculate the expected price of the reward
+
+                crateRewards[index] = reward;
+                index++;
             }
         }
-
-
-        /*
-        for(Object crateObj: crates){
-            JSONObject crate = (JSONObject) crateObj;
-
-            String crateName = crate.get("name").toString();
-
-            String linebreak = "-".repeat(90);
-            System.out.println("\n" + linebreak + "\n" );
-            System.out.println(crate);
-
-
-            //http://steamcommunity.com/market/priceoverview/?appid=730&currency=1&market_hash_name=testName
-
-
-
-            //if it has wear, add the wear conditions
-
-            /*
-            for (Wear wear : wears) {
-
-                String getPrice
-                        = String.format(
-                        "https://steamcommunity.com/market/priceoverview/" +
-                                "?appid=730&currency=1&market_hash_name=%1$s (%2$s)",
-                        testName.replace("|","%7C"),
-                        wear.getName());
-                getPrice = getPrice.replace(" ", "%20");
-                System.out.println(getPrice);
-
-
-                HttpClient client = HttpClient.newHttpClient();
-                HttpRequest request = HttpRequest.newBuilder()
-                    .GET()
-                    .header("accept", "application/json")
-                    .uri(URI.create(getPrice))
-                    .build();
-
-                HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-                System.out.println("made it here before ");
-                System.out.println(response.statusCode());
-                System.out.println(response.body());
-                System.out.println("made it here after ");
-
-                ObjectMapper mapper = new ObjectMapper();
-
-                SteamResponse steamResponse = mapper.readValue(response.body(), new TypeReference<SteamResponse>() {
-                });
-
-                System.out.println(steamResponse.getLowest_price());
-
-                //rate limit of 3 per minute
-                Thread.sleep(20000);
-                //make this a URL, then when you get a response, if(success) -> if(lowest_price)
-
-            }
-            */
-
-
-        //}
-
-
     }
 }

@@ -2,23 +2,26 @@ package com.crates.value;
 
 import jakarta.persistence.*;
 
+import java.math.BigDecimal;
+
 @Entity
 public class Reward {
-
-    private @Id
-    @GeneratedValue(strategy= GenerationType.AUTO) Long id;
+    private @Id @GeneratedValue(strategy=GenerationType.AUTO) Long id;
     private String name;
+    private String url;
     private String rarity;
     private double odds;
-    private double price;
-    private @ManyToOne Container container;
+    private double[] wearOdds;
+    private String[] prices;
 
-    public Reward(String name, String rarity, double odds, double price, Container container) {
+
+    public Reward(String name, String url, String rarity, double odds, double[]wearOdds, String[] prices) {
         this.name = name;
         this.rarity = rarity;
+        this.url = url;
         this.odds = odds;
-        this.container = container;
-        this.price = price;
+        this.wearOdds = wearOdds;
+        this.prices = prices;
     }
 
     public Reward() {
@@ -48,32 +51,37 @@ public class Reward {
         this.odds = odds;
     }
 
-    public double getPrice() {
-        return price;
+    public String[] getPrices() {
+        return prices;
     }
 
-    public void setPrice(double price) {
-        this.price = price;
-    }
-
-    public Container getContainer(){
-        return container;
-    }
-
-    public void setContainer(Container container){
-        this.container = container;
+    public void setPrices(String[] prices) {
+        this.prices = prices;
     }
 
     @Override
     public String toString() {
         return "Reward{" +
-                "id=" + id +
                 ", name='" + name + '\'' +
                 ", rarity='" + rarity + '\'' +
                 ", odds='" + odds + '\'' +
-                ", price='" + price + '\'' +
-                ", container='" + container +
+                ", prices='" + prices + '\'' +
                 '}';
     }
 
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    public double[] getWearOdds() {
+        return wearOdds;
+    }
+
+    public void setWearOdds(double[] wearOdds) {
+        this.wearOdds = wearOdds;
+    }
 }
