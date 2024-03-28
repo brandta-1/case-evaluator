@@ -51,7 +51,8 @@ public class DatabaseLoader implements CommandLineRunner {
                 entry("l", 0.032),
                 entry("m",  0.1598),
                 entry("r",  0.7992),
-                entry("a",0.0064)
+                entry("a",0.0064),
+                entry("g", 0.0026)
         ));
 
         //these are the float value definitions for weapon conditions, starting from factory new.
@@ -64,6 +65,7 @@ public class DatabaseLoader implements CommandLineRunner {
                 {0.45,1.0}
         };
 
+        double statTrakOdds = 0.1;
         for(Object crateObj: crates){
 
             //TODO potentially fix this typecasting
@@ -95,11 +97,11 @@ public class DatabaseLoader implements CommandLineRunner {
                 reward.setUrl((String) rewardJSON.get("url"));
 
                 JSONObject rewardRarity = (JSONObject) rewardJSON.get("rarity");
-                //todo this probably needs to be changed
+                //todo this probably needs to be simplified
                 reward.setRarity(String.valueOf(rewardRarity.get("id").toString().charAt(7)));
 
                 //the odds of an item are its rarity divided by how many of its rarity are in its container
-                reward.setOdds(rarityOdds.get(reward.getRarity()) / denominators.get(reward.getRarity()));
+                reward.setOdds( rarityOdds.get(reward.getRarity()) / denominators.get(reward.getRarity()) );
 
                 //the prices of an item are an array of its possible qualities, retrieved from the web
                 String[] rewardPrices = retrieveWebData.getRewardPrice(reward.getUrl());
@@ -111,13 +113,15 @@ public class DatabaseLoader implements CommandLineRunner {
                 double[] floatCaps = {Double.parseDouble(floatCapsJSON.getFirst().toString()),
                         Double.parseDouble(floatCapsJSON.getLast().toString())};
 
-                int floatGaps = partitionWear.getFloatGaps(floatCaps);
+                int floatGaps = partitionWear.getFloatGaps(weaponWearBoundaries, floatCaps);
 
+                //these are the odds of an items possible wears
                 double[] wears = WearOdds.getWearOdds(weaponWearBoundaries, floatCaps, floatGaps);
 
                 reward.setWearOdds(wears);
 
                 //todo need to calculate the expected price of the reward
+                double rewardValue = CalculateValue.calculateRewardValue(reward.getWearOdds(), reward.getPrices(), statTrakOdds);
 
                 crateRewards[index] = reward;
                 index++;
