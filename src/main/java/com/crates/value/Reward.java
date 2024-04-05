@@ -3,6 +3,7 @@ package com.crates.value;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
 
 @Entity
 public class Reward {
@@ -13,15 +14,17 @@ public class Reward {
     private double odds;
     private double[] wearOdds;
     private String[] prices;
+    private double value;
 
 
-    public Reward(String name, String url, String rarity, double odds, double[]wearOdds, String[] prices) {
+    public Reward(String name, String url, String rarity, double odds, double[]wearOdds, String[] prices, double value) {
         this.name = name;
         this.rarity = rarity;
         this.url = url;
         this.odds = odds;
         this.wearOdds = wearOdds;
         this.prices = prices;
+        this.value = value;
     }
 
     public Reward() {
@@ -62,10 +65,12 @@ public class Reward {
     @Override
     public String toString() {
         return "Reward{" +
-                ", name='" + name + '\'' +
+                "name='" + name + '\'' +
                 ", rarity='" + rarity + '\'' +
-                ", odds='" + odds + '\'' +
-                ", prices='" + prices + '\'' +
+                ", odds=" + odds +
+                ", wearOdds=" + Arrays.toString(wearOdds) +
+                ", prices=" + Arrays.toString(prices) +
+                ", value=" + value +
                 '}';
     }
 
@@ -83,5 +88,13 @@ public class Reward {
 
     public void setWearOdds(double[] wearOdds) {
         this.wearOdds = wearOdds;
+    }
+
+    public double getValue() {
+        return value;
+    }
+
+    public void setValue(double value) {
+        this.value = value;
     }
 }

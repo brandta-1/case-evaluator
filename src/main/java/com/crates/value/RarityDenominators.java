@@ -9,11 +9,8 @@ import java.util.Map;
 import static java.util.Map.entry;
 
 public class RarityDenominators {
-    public RarityDenominators() {
 
-    };
-
-    public Map<String, Integer> getRarityDenominators(JSONArray contains){
+    public static Map<String, Integer> getRarityDenominators(JSONArray contains){
 
         int a = 0;
         int l = 0;
@@ -25,18 +22,22 @@ public class RarityDenominators {
            JSONObject reward = (JSONObject) rewardObj;
            JSONObject rarityJSON = (JSONObject) reward.get("rarity");
 
+
            String rarityId = rarityJSON.get("id").toString();
            String rarity = String.valueOf(rarityId.charAt(7));
-
            switch(rarity) {
                case "r":
                    r++;
+                   break;
                case "m":
                    m++;
+                   break;
                case "l":
                    l++;
+                   break;
                case "a":
                    a++;
+                   break;
            }
        }
 

@@ -7,15 +7,21 @@ import org.jsoup.select.Elements;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-
+import java.util.concurrent.TimeUnit;
 public class RetrieveWebData {
 
-    public RetrieveWebData(){
+    private static void Prevent429(){
+        try
+        {
+            Thread.sleep(2000);
+        }
+        catch(InterruptedException ex)
+        {
+            Thread.currentThread().interrupt();
+        }
     }
-
-
     //scrapes for a case
-    public BigDecimal getContainerPrice(String containerURL) throws IOException {
+    public static BigDecimal getContainerPrice(String containerURL) throws IOException {
 
         Document doc = Jsoup.connect(containerURL).get();
 
@@ -25,17 +31,18 @@ public class RetrieveWebData {
         String linkText = link.text();
         String priceString = linkText.split(" ")[0];
 
+        Prevent429();
         return new BigDecimal(priceString.substring(1));
     }
 
     //scrapes for a single reward item
-    public String[] getRewardPrice(String rewardURL) throws IOException {
+    public static String[] getRewardPrice(String rewardURL) throws IOException {
 
         Document doc = Jsoup.connect(rewardURL).get();
 
         Element left = doc.select("div.price-details").getFirst();
 
-        System.out.println(left);
+        //System.out.println(left);
 
         String[] returnPrices = new String[10];
         Elements prices = left.select("span.pull-right");
@@ -44,6 +51,7 @@ public class RetrieveWebData {
             returnPrices[i] = prices.get(i).text();
         }
 
+        Prevent429();
         return returnPrices;
     }
 }
