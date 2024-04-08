@@ -12,18 +12,9 @@ public class CalculateValue {
                 continue;
             }
 
-            if(prices[i].equals("No Recent Price")){
-                prices[i] = "0.0";
-            }
-
-            if(prices[i + (prices.length/2)].equals("No Recent Price")){
-                prices[i + (prices.length/2)] = "0.0";
-            }
-
-            double statTrakPrice = Double.parseDouble(prices[i].substring(1).replace(",",""));
-            double normalPrice = Double.parseDouble(prices[i+ (prices.length/2)].substring(1).replace(",",""));
+            double statTrakPrice = Double.parseDouble(prices[i]);
+            double normalPrice = Double.parseDouble(prices[i+ (prices.length/2)]);
             returnValue +=  wearOdds[i] * ( (statTrakOdds * statTrakPrice) + ( (1-statTrakOdds) * normalPrice) );
-
         }
         return returnValue;
     }

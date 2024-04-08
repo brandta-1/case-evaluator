@@ -9,22 +9,23 @@ import java.util.Arrays;
 public class Container {
 
     private @Id @GeneratedValue(strategy=GenerationType.AUTO) Long id;
-
     private String name;
-
     private String url;
-
-
-
     private String containerType;
+    private double price;
+    private String image;
 
-    private BigDecimal price;
 
-    private @OneToMany Reward[] rewards;
 
-    public Container(String name, String url, String containerType, BigDecimal price, Reward[] rewards) {
+    @OneToMany
+    private  Reward[] rewards;
+
+    private double roi;
+
+    public Container(String name, String url, String image, String containerType, double price, Reward[] rewards) {
         this.name = name;
         this.url = url;
+        this.image = image;
         this.containerType = containerType;
         this.price = price;
         this.rewards = rewards;
@@ -47,6 +48,13 @@ public class Container {
     public void setUrl(String url) {
         this.url = url;
     }
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
+    }
 
     public String getType() {
         return containerType;
@@ -56,11 +64,11 @@ public class Container {
         this.containerType = containerType;
     }
 
-    public BigDecimal getPrice(){
+    public double getPrice(){
         return price;
     }
 
-    public void setPrice(BigDecimal price){
+    public void setPrice(double price){
         this.price = price;
     }
 
@@ -70,6 +78,20 @@ public class Container {
 
     public void setRewards(Reward[] rewards){
         this.rewards = rewards;
+    }
+
+    public void setRoi(){
+        double sum = 0.0;
+        for( Reward reward : this.rewards){
+            sum += reward.getValue();
+        }
+        double denom = (this.price + 2.5);
+        System.out.println("HERE IS SUM: "+sum+" HERE IS PRICE+2.5 "+denom);
+        this.roi = sum / (this.price + 2.5);
+    }
+
+    public double getRoi(){
+        return roi;
     }
 
     @Override

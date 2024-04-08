@@ -7,6 +7,7 @@ import org.jsoup.select.Elements;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 public class RetrieveWebData {
 
@@ -21,7 +22,7 @@ public class RetrieveWebData {
         }
     }
     //scrapes for a case
-    public static BigDecimal getContainerPrice(String containerURL) throws IOException {
+    public static Double getContainerPrice(String containerURL) throws IOException {
 
         Document doc = Jsoup.connect(containerURL).get();
 
@@ -32,23 +33,27 @@ public class RetrieveWebData {
         String priceString = linkText.split(" ")[0];
 
         Prevent429();
-        return new BigDecimal(priceString.substring(1));
+        return Double.parseDouble(priceString.substring(1));
     }
 
     //scrapes for a single reward item
     public static String[] getRewardPrice(String rewardURL) throws IOException {
-
         Document doc = Jsoup.connect(rewardURL).get();
-
         Element left = doc.select("div.price-details").getFirst();
-
         //System.out.println(left);
-
-        String[] returnPrices = new String[10];
+        //this pulls all prices for steam AND for bit skins, so we ignore the 2nd half
         Elements prices = left.select("span.pull-right");
+        String[] returnPrices = new String[prices.size() / 2];
 
-        for(int i = 0; i < 10; i++) {
-            returnPrices[i] = prices.get(i).text();
+        for(int i = 0; i < prices.size() / 2; i++) {
+            String currentPrice = prices.get(i).text();
+            if(currentPrice.equals("No Recent Price")){
+                returnPrices[i] = "0.0";
+            } else if(currentPrice.equals("Not Possible")){
+                returnPrices[i] = currentPrice;
+            } else {
+                returnPrices[i] = currentPrice.substring(1).replace(",","");
+            }
         }
 
         Prevent429();

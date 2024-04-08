@@ -1,6 +1,7 @@
 package com.crates.value;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.Cascade;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -15,8 +16,11 @@ public class Reward {
     private double[] wearOdds;
     private String[] prices;
     private double value;
-
-
+    //todo
+    //this is a major issue because rare rewards are not unique,
+    // so you're going to end up with 11 different clones of many different rare rewards
+    @ManyToOne
+    private Container container;
     public Reward(String name, String url, String rarity, double odds, double[]wearOdds, String[] prices, double value) {
         this.name = name;
         this.rarity = rarity;
@@ -96,5 +100,12 @@ public class Reward {
 
     public void setValue(double value) {
         this.value = value;
+    }
+    public Container getContainer() {
+        return container;
+    }
+
+    public void setContainer(Container container) {
+        this.container = container;
     }
 }
