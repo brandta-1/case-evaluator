@@ -7,4 +7,7 @@ public interface ContainerRepository extends CrudRepository<Container, Integer> 
 
     @Query(value = "select * from Container container where container.name = ?1", nativeQuery = true)
     Container findByName(String name);
+
+    @Query("select new com.crates.value.ContainerSimple(c.name, c.image, c.price, c.roi) from Container c")
+    Iterable<ContainerSimple> findAllWithoutLinks();
 }

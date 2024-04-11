@@ -97,24 +97,34 @@ public class DatabaseLoader implements CommandLineRunner {
         return reward;
     }
 
+    boolean skiploop=true;
     @Override
     public void run(String... strings) throws Exception {
         
         //...
-        boolean dontRunThis = false;
+        boolean dontRunThis = true;
         if(dontRunThis){
             System.out.println("Not running dbloader");
             return;
         }
+
 
         //TODO ask
         JSONArray crates = (JSONArray) new JSONParser().parse(
                 new FileReader("src/main/resources/cases.json"));
 
         for(Object crateObj: crates){
+
+
             //TODO potentially fix this typecasting
             JSONObject crate = (JSONObject) crateObj;
+            if(crate.get("name").equals("Clutch Case")){
+                skiploop=false;
+            }
 
+            if(skiploop){
+                continue;
+            }
             Container container = new Container();
             //set new container in the db
             //TODO typecasting fix...
