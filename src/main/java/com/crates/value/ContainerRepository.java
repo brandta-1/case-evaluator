@@ -10,4 +10,7 @@ public interface ContainerRepository extends CrudRepository<Container, Integer> 
 
     @Query("select new com.crates.value.ContainerSimple(c.name, c.image, c.price, c.roi) from Container c")
     Iterable<ContainerSimple> findAllWithoutLinks();
+
+    @Query(value = "select count(*) from Container container", nativeQuery = true)
+    int isEmpty();
 }
