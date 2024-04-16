@@ -40,17 +40,25 @@ public class RSSController {
         List<String> descriptions = new ArrayList<>();
         List<String> links = new ArrayList<>();
         List<String> images = new ArrayList<>();
+        List<Integer> indexes = new ArrayList<>();
         boolean append = false;
         Pattern linkPattern = Pattern.compile("\"(.*?)\"");
 
         //check each line in the xml, once an <item> tag is hit,
         // take each child element and parse its tag and text,
         // then set its text to the appropriate Article attribute based on the tag
+        int index = 0;
         while((line=in.readLine())!=null) {
 
+            //don't need all the articles so just stop at 4
+            if(index==4){
+                break;
+            }
             //stop appending if the <item> element has closed
             if("</item>".equals(line.replace(" ",""))){
                 append = false;
+                indexes.add(index);
+                index++;
             }
 
             //if we are inside an <item> element
@@ -68,7 +76,8 @@ public class RSSController {
                 if(element[0].contains("media")){
                     Matcher m = linkPattern.matcher(element[0]);
                     if(m.find()){
-                        images.add(m.group(1));
+                        String image =m.group(1).replace("amp;","");
+                        images.add(image);
                     }
                 }
                     //remove indentations and closing tags
@@ -99,7 +108,7 @@ public class RSSController {
 
         //for all the attributes we have, generate Articles
         for( int i = 0; i<titles.size(); i++){
-            Article article = new Article(titles.get(i), descriptions.get(i), links.get(i), images.get(i));
+            Article article = new Article(titles.get(i), descriptions.get(i), links.get(i), images.get(i), indexes.get(i));
             articles.add(article);
         }
     }

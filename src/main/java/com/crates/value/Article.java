@@ -11,12 +11,14 @@ public class Article {
     private String description;
     private String link;
     private String image;
+    private int index;
 
-    public Article(String title, String description, String link, String image){
+    public Article(String title, String description, String link, String image, int index){
         this.title = title;
         this.description = description;
         this.link = link;
         this.image = image;
+        this.index = index;
     }
 
     public String getTitle() {
@@ -49,5 +51,12 @@ public class Article {
 
     public void setImage(String image) {
         this.image = image;
+    }
+    public int getIndex() {
+        return index;
+    }
+
+    public void setIndex(int index) {
+        this.index = index;
     }
 }
